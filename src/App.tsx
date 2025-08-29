@@ -5,14 +5,15 @@ import { Toaster } from 'react-hot-toast';
 import { store } from './store';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUserAsync, selectIsAuthenticated, selectUserRole } from './store/slices/authSlice';
-import ApiDebug from './debug/ApiDebug';
+import { UserRole } from './types';
 
 // Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
-import CustomerDashboard from './pages/customer/CustomerDashboard';
-import TaskerDashboard from './pages/tasker/TaskerDashboard';
+import ProfilePage from './pages/ProfilePage';
+import CustomerRoutes from './pages/customer/CustomerRoutes';
+import TaskerRoutes from './pages/tasker/TaskerRoutes';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -38,8 +39,8 @@ function AppContent() {
               isAuthenticated ? (
                 <Navigate 
                   to={
-                    userRole === 'ADMIN' ? '/admin' :
-                    userRole === 'CUSTOMER' ? '/customer' : '/tasker'
+                    userRole === UserRole.ADMIN ? '/admin' :
+                    userRole === UserRole.CUSTOMER ? '/customer' : '/tasker'
                   } 
                   replace 
                 />
@@ -54,8 +55,8 @@ function AppContent() {
               isAuthenticated ? (
                 <Navigate 
                   to={
-                    userRole === 'ADMIN' ? '/admin' :
-                    userRole === 'CUSTOMER' ? '/customer' : '/tasker'
+                    userRole === UserRole.ADMIN ? '/admin' :
+                    userRole === UserRole.CUSTOMER ? '/customer' : '/tasker'
                   } 
                   replace 
                 />
@@ -70,8 +71,8 @@ function AppContent() {
               isAuthenticated ? (
                 <Navigate 
                   to={
-                    userRole === 'ADMIN' ? '/admin' :
-                    userRole === 'CUSTOMER' ? '/customer' : '/tasker'
+                    userRole === UserRole.ADMIN ? '/admin' :
+                    userRole === UserRole.CUSTOMER ? '/customer' : '/tasker'
                   } 
                   replace 
                 />
@@ -83,25 +84,33 @@ function AppContent() {
 
           {/* Protected routes */}
           <Route
+            path="/profile"
+            element={
+              <ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.CUSTOMER, UserRole.TASKER]}>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/customer/*"
             element={
-              <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                <CustomerDashboard />
+              <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
+                <CustomerRoutes />
               </ProtectedRoute>
             }
           />
           <Route
             path="/tasker/*"
             element={
-              <ProtectedRoute allowedRoles={['TASKER']}>
-                <TaskerDashboard />
+              <ProtectedRoute allowedRoles={[UserRole.TASKER]}>
+                <TaskerRoutes />
               </ProtectedRoute>
             }
           />
           <Route
             path="/admin/*"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                 <AdminDashboard />
               </ProtectedRoute>
             }

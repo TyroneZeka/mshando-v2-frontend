@@ -1,4 +1,24 @@
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { getMyTasksAsync, selectMyTasks } from '../../store/slices/taskSlice';
+
 export default function CustomerDashboard() {
+  const dispatch = useAppDispatch();
+  const myTasks = useAppSelector(selectMyTasks);
+
+  useEffect(() => {
+    dispatch(getMyTasksAsync());
+  }, [dispatch]);
+
+  const taskStats = {
+    total: myTasks?.totalElements || 0,
+    completed: myTasks?.content?.filter(task => task.status === 'COMPLETED').length || 0,
+    inProgress: myTasks?.content?.filter(task => task.status === 'IN_PROGRESS' || task.status === 'ASSIGNED').length || 0,
+    totalSpent: myTasks?.content?.reduce((sum, task) => {
+      return task.status === 'COMPLETED' ? sum + task.budget : sum;
+    }, 0) || 0,
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow">
@@ -24,7 +44,7 @@ export default function CustomerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Tasks</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{taskStats.total}</dd>
                 </dl>
               </div>
             </div>
@@ -42,7 +62,7 @@ export default function CustomerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Completed</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{taskStats.completed}</dd>
                 </dl>
               </div>
             </div>
@@ -60,7 +80,7 @@ export default function CustomerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{taskStats.inProgress}</dd>
                 </dl>
               </div>
             </div>
@@ -78,7 +98,7 @@ export default function CustomerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Spent</dt>
-                  <dd className="text-lg font-medium text-gray-900">$0</dd>
+                  <dd className="text-lg font-medium text-gray-900">${taskStats.totalSpent.toLocaleString()}</dd>
                 </dl>
               </div>
             </div>
@@ -98,9 +118,12 @@ export default function CustomerDashboard() {
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks yet</h3>
                 <p className="mt-1 text-sm text-gray-500">Get started by creating your first task.</p>
                 <div className="mt-6">
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                  <Link 
+                    to="/customer/create-task"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
                     Create Task
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

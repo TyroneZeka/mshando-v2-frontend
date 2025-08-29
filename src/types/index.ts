@@ -14,11 +14,13 @@ export interface User {
   updatedAt: string;
 }
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  CUSTOMER = 'CUSTOMER',
-  TASKER = 'TASKER'
-}
+export const UserRole = {
+  ADMIN: 'ADMIN',
+  CUSTOMER: 'CUSTOMER',
+  TASKER: 'TASKER'
+} as const;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 // Authentication types
 export interface LoginRequest {
@@ -73,20 +75,24 @@ export interface Task {
   updatedAt: string;
 }
 
-export enum TaskStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ASSIGNED = 'ASSIGNED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
-}
+export const TaskStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ASSIGNED: 'ASSIGNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const;
 
-export enum TaskPriority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH'
-}
+export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
+
+export const TaskPriority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH'
+} as const;
+
+export type TaskPriority = typeof TaskPriority[keyof typeof TaskPriority];
 
 export interface CreateTaskRequest {
   title: string;
@@ -138,14 +144,16 @@ export interface Bid {
   updatedAt: string;
 }
 
-export enum BidStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
-}
+export const BidStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  WITHDRAWN: 'WITHDRAWN',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const;
+
+export type BidStatus = typeof BidStatus[keyof typeof BidStatus];
 
 export interface CreateBidRequest {
   taskId: number;
@@ -189,20 +197,24 @@ export interface Payment {
   updatedAt: string;
 }
 
-export enum PaymentType {
-  TASK_PAYMENT = 'TASK_PAYMENT',
-  REFUND = 'REFUND',
-  SERVICE_FEE = 'SERVICE_FEE'
-}
+export const PaymentType = {
+  TASK_PAYMENT: 'TASK_PAYMENT',
+  REFUND: 'REFUND',
+  SERVICE_FEE: 'SERVICE_FEE'
+} as const;
 
-export enum PaymentStatus {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
-}
+export type PaymentType = typeof PaymentType[keyof typeof PaymentType];
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED'
+} as const;
+
+export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus];
 
 export interface CreatePaymentRequest {
   customerId: number;
@@ -236,22 +248,26 @@ export interface Notification {
   createdAt: string;
 }
 
-export enum NotificationType {
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  PUSH = 'PUSH'
-}
+export const NotificationType = {
+  EMAIL: 'EMAIL',
+  SMS: 'SMS',
+  PUSH: 'PUSH'
+} as const;
 
-export enum NotificationStatus {
-  PENDING = 'PENDING',
-  SENT = 'SENT',
-  DELIVERED = 'DELIVERED',
-  FAILED = 'FAILED',
-  READ = 'READ'
-}
+export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
+
+export const NotificationStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  READ: 'READ'
+} as const;
+
+export type NotificationStatus = typeof NotificationStatus[keyof typeof NotificationStatus];
 
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;

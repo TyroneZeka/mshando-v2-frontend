@@ -1,4 +1,26 @@
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { getMyAssignmentsAsync, searchTasksAsync, selectMyAssignments } from '../../store/slices/taskSlice';
+import { TaskStatus } from '../../types';
+
 export default function TaskerDashboard() {
+  const dispatch = useAppDispatch();
+  const myAssignments = useAppSelector(selectMyAssignments);
+
+  useEffect(() => {
+    dispatch(getMyAssignmentsAsync());
+    dispatch(searchTasksAsync({ status: TaskStatus.PUBLISHED, size: 5 }));
+  }, [dispatch]);
+
+  const taskerStats = {
+    activeBids: 0, // TODO: Implement bids slice
+    completedTasks: myAssignments?.content?.filter(task => task.status === 'COMPLETED').length || 0,
+    inProgress: myAssignments?.content?.filter(task => task.status === 'IN_PROGRESS').length || 0,
+    totalEarnings: myAssignments?.content?.reduce((sum, task) => {
+      return task.status === 'COMPLETED' ? sum + task.budget : sum;
+    }, 0) || 0,
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow">
@@ -24,7 +46,7 @@ export default function TaskerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Active Bids</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{taskerStats.activeBids}</dd>
                 </dl>
               </div>
             </div>
@@ -42,7 +64,7 @@ export default function TaskerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Completed Tasks</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{taskerStats.completedTasks}</dd>
                 </dl>
               </div>
             </div>
@@ -60,7 +82,7 @@ export default function TaskerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{taskerStats.inProgress}</dd>
                 </dl>
               </div>
             </div>
@@ -78,7 +100,7 @@ export default function TaskerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
-                  <dd className="text-lg font-medium text-gray-900">$0</dd>
+                  <dd className="text-lg font-medium text-gray-900">${taskerStats.totalEarnings.toLocaleString()}</dd>
                 </dl>
               </div>
             </div>
@@ -98,9 +120,12 @@ export default function TaskerDashboard() {
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks available</h3>
                 <p className="mt-1 text-sm text-gray-500">Check back later for new task opportunities.</p>
                 <div className="mt-6">
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                  <Link 
+                    to="/tasker/browse"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
                     Browse Tasks
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
