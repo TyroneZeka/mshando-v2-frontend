@@ -28,7 +28,7 @@ export const loginAsync = createAsyncThunk(
         return response.user;
       }
       return rejectWithValue(response.message || 'Login failed');
-    } catch (error) {
+    } catch {
       return rejectWithValue('Login failed');
     }
   }
@@ -43,7 +43,7 @@ export const registerAsync = createAsyncThunk(
         return response.message || 'Registration successful';
       }
       return rejectWithValue(response.message || 'Registration failed');
-    } catch (error) {
+    } catch {
       return rejectWithValue('Registration failed');
     }
   }
@@ -55,7 +55,7 @@ export const getCurrentUserAsync = createAsyncThunk(
     try {
       const user = await AuthService.getCurrentUser();
       return user;
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to fetch user data');
     }
   }
@@ -67,7 +67,7 @@ export const updateProfileAsync = createAsyncThunk(
     try {
       const user = await AuthService.updateProfile(userData);
       return user;
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to update profile');
     }
   }
