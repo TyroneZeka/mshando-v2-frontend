@@ -1,0 +1,42 @@
+#!/bin/sh
+# Pre-commit hook for React/TypeScript frontend
+
+echo "🔍 Running pre-commit checks..."
+
+# Basic file checks
+echo "📁 Checking staged files..."
+staged_files=$(git diff --cached --name-only)
+
+if echo "$staged_files" | grep -q '\.tsx\?$'; then
+    echo "✅ TypeScript/React files detected in commit"
+fi
+
+if echo "$staged_files" | grep -q '\.md$'; then
+    echo "✅ Documentation files detected in commit"
+fi
+
+if echo "$staged_files" | grep -q '\.json$'; then
+    echo "✅ Configuration files detected in commit"
+fi
+
+if echo "$staged_files" | grep -q '\.css$'; then
+    echo "✅ Styling files detected in commit"
+fi
+
+echo "📊 Total files to commit: $(echo "$staged_files" | wc -l)"
+
+# Check for common issues
+echo "🔍 Checking for common issues..."
+
+# Check for console.log (excluding specific debugging)
+if echo "$staged_files" | xargs grep -l "console\.log" 2>/dev/null | grep -v "debug\|logging"; then
+    echo "⚠️  Warning: console.log statements found (consider using proper logging)"
+fi
+
+# Check for TODO comments
+if echo "$staged_files" | xargs grep -l "TODO\|FIXME" 2>/dev/null; then
+    echo "ℹ️  Info: TODO/FIXME comments found"
+fi
+
+echo "✅ Pre-commit checks completed!"
+echo "🚀 Ready to commit!"
