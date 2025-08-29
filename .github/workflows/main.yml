@@ -1,0 +1,231 @@
+name: Frontend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint
+      continue-on-error: false
+      
+    - name: Run TypeScript check
+      run: npm run type-check
+      continue-on-error: false
+      
+    - name: Run unit tests
+      run: npm run test:ci
+      env:
+        CI: true
+        
+    - name: Generate test coverage
+      run: npm run test:coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: frontend
+        name: frontend-coverage
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      env:
+        NODE_ENV: production
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: dist/
+        retention-days: 30
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: npm audit --audit-level=high
+      continue-on-error: false
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  lighthouse:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Serve application
+      run: |
+        npm install -g serve
+        serve -s dist -l 3000 &
+        sleep 5
+        
+    - name: Run Lighthouse CI
+      run: |
+        npm install -g @lhci/cli
+        lhci autorun
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  e2e-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install Playwright
+      run: npx playwright install --with-deps
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Run E2E tests
+      run: npm run test:e2e
+      
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: e2e-test-results
+        path: test-results/
+        retention-days: 30
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    needs: [test, build, security-scan]
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-build
+        path: dist/
+        
+    - name: Deploy to staging
+      run: |
+        echo "Deploying frontend to staging environment"
+        echo "Build files ready for deployment"
+        # Add your staging deployment commands here
+        # Examples: 
+        # - Deploy to Netlify: netlify deploy --dir=dist --prod
+        # - Deploy to Vercel: vercel --prod
+        # - Deploy to S3: aws s3 sync dist/ s3://staging-bucket
+        
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests on staging"
+        # Add smoke tests for staging environment
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    needs: [test, build, security-scan, lighthouse]
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-build
+        path: dist/
+        
+    - name: Deploy to production
+      run: |
+        echo "Deploying frontend to production environment"
+        echo "Build files ready for deployment"
+        # Add your production deployment commands here
+        
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests on production"
+        # Add smoke tests for production environment
+        
+    - name: Notify deployment success
+      run: |
+        echo "Frontend deployment to production completed successfully"

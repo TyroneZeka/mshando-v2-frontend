@@ -1,0 +1,56 @@
+# CODEOWNERS file for frontend automatic review assignment
+
+# Global owners - requires approval for any change
+* @TyroneZeka
+
+# Source code
+/src/ @TyroneZeka
+
+# Components and UI
+/src/components/ @TyroneZeka
+/src/pages/ @TyroneZeka
+/src/assets/ @TyroneZeka
+
+# State management and services
+/src/store/ @TyroneZeka
+/src/services/ @TyroneZeka
+/src/hooks/ @TyroneZeka
+
+# Type definitions
+/src/types/ @TyroneZeka
+
+# Security-critical files require additional security review
+/src/services/api.ts @TyroneZeka
+/src/services/authService.ts @TyroneZeka
+/src/store/slices/authSlice.ts @TyroneZeka
+
+# Configuration files
+/.github/ @TyroneZeka
+/.githooks/ @TyroneZeka
+/vite.config.ts @TyroneZeka
+/tailwind.config.js @TyroneZeka
+/tsconfig*.json @TyroneZeka
+
+# Package management
+/package.json @TyroneZeka
+/package-lock.json @TyroneZeka
+
+# Environment and deployment
+/.env* @TyroneZeka
+/Dockerfile @TyroneZeka
+/docker-compose*.yml @TyroneZeka
+
+# Documentation requires documentation review
+*.md @TyroneZeka
+/docs/ @TyroneZeka
+
+# Testing
+/src/**/*.test.* @TyroneZeka
+/src/**/*.spec.* @TyroneZeka
+/e2e/ @TyroneZeka
+/cypress/ @TyroneZeka
+/playwright.config.* @TyroneZeka
+
+# Build and CI/CD
+/.github/workflows/ @TyroneZeka
+/public/ @TyroneZeka
