@@ -39,8 +39,12 @@ class TokenManager {
 
   static isTokenExpired(token: string): boolean {
     try {
+      if (!token || token.split('.').length !== 3) {
+        return true;
+      }
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return Date.now() >= payload.exp * 1000;
+      const isExpired = Date.now() >= payload.exp * 1000;
+      return isExpired;
     } catch {
       return true;
     }

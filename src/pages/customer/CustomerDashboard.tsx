@@ -2,14 +2,18 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { getMyTasksAsync, selectMyTasks } from '../../store/slices/taskSlice';
+import { selectIsAuthenticated } from '../../store/slices/authSlice';
 
 export default function CustomerDashboard() {
   const dispatch = useAppDispatch();
   const myTasks = useAppSelector(selectMyTasks);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   useEffect(() => {
-    dispatch(getMyTasksAsync());
-  }, [dispatch]);
+    if (isAuthenticated) {
+      dispatch(getMyTasksAsync());
+    }
+  }, [dispatch, isAuthenticated]);
 
   const taskStats = {
     total: myTasks?.totalElements || 0,

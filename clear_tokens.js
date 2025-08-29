@@ -1,0 +1,1 @@
+console.log('Token:', localStorage.getItem('mshando_token')); console.log('Refresh Token:', localStorage.getItem('mshando_refresh_token')); localStorage.removeItem('mshando_token'); localStorage.removeItem('mshando_refresh_token'); console.log('Tokens cleared');
