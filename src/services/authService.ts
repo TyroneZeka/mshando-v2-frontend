@@ -85,24 +85,10 @@ export class AuthService {
 
   static isAuthenticated(): boolean {
     const token = TokenManager.getToken();
-    if (!token) {
-      return false;
-    }
-    
-    if (TokenManager.isTokenExpired(token)) {
-      // Token is expired, clear it
-      TokenManager.clearTokens();
-      return false;
-    }
-    
-    return true;
+    return token !== null && !TokenManager.isTokenExpired(token);
   }
 
   static getToken(): string | null {
     return TokenManager.getToken();
-  }
-
-  static clearAuthState(): void {
-    TokenManager.clearTokens();
   }
 }
