@@ -112,6 +112,20 @@ class TaskService {
     });
   }
 
+  async uploadTaskPhotos(taskId: number, photos: File[]): Promise<Task> {
+    const formData = new FormData();
+    photos.forEach((photo) => {
+      formData.append(`photos`, photo);
+    });
+    
+    const response = await taskApi.post(`/tasks/${taskId}/photos`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
   async setPrimaryImage(taskId: number, imageId: number): Promise<void> {
     await taskApi.patch(`/tasks/${taskId}/images/${imageId}/set-primary`);
   }

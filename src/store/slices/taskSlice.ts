@@ -138,6 +138,18 @@ export const getCategoriesAsync = createAsyncThunk(
   }
 );
 
+export const uploadTaskPhotosAsync = createAsyncThunk(
+  'tasks/uploadTaskPhotos',
+  async ({ taskId, photos }: { taskId: number; photos: File[] }, { rejectWithValue }) => {
+    try {
+      const task = await taskService.uploadTaskPhotos(taskId, photos);
+      return task;
+    } catch {
+      return rejectWithValue('Failed to upload photos');
+    }
+  }
+);
+
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
@@ -284,6 +296,27 @@ const taskSlice = createSlice({
     builder
       .addCase(getCategoriesAsync.fulfilled, (state, action) => {
         state.categories = action.payload;
+      });
+
+    // Upload task photos
+    builder
+      .addCase(uploadTaskPhotosAsync.pending, (state) => {
+        state.isUpdating = true;
+        state.error = null;
+      })
+      .addCase(uploadTaskPhotosAsync.fulfilled, (state, action) => {
+        state.isUpdating = false;
+        const index = state.tasks.findIndex(task => task.id === action.payload.id);
+        if (index !== -1) {
+          state.tasks[index] = action.payload;
+        }
+        if (state.currentTask?.id === action.payload.id) {
+          state.currentTask = action.payload;
+        }
+      })
+      .addCase(uploadTaskPhotosAsync.rejected, (state, action) => {
+        state.isUpdating = false;
+        state.error = action.payload as string;
       });
   },
 });
