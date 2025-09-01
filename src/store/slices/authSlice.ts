@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { AuthService } from '../../services/authService';
-import type { User, LoginRequest, RegisterRequest, UserRole } from '../../types';
+import type { User, LoginRequest, RegisterRequest, UserRole, ProfileUpdateRequest } from '../../types';
 import type { RootState } from '../index';
 
 interface AuthState {
@@ -63,7 +63,7 @@ export const getCurrentUserAsync = createAsyncThunk(
 
 export const updateProfileAsync = createAsyncThunk(
   'auth/updateProfile',
-  async (userData: Partial<User>, { rejectWithValue }) => {
+  async (userData: ProfileUpdateRequest, { rejectWithValue }) => {
     try {
       const user = await AuthService.updateProfile(userData);
       return user;

@@ -7,6 +7,9 @@ import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUserAsync, selectIsAuthenticated, selectUserRole } from './store/slices/authSlice';
 import { UserRole } from './types';
 
+// Components
+import Layout from './components/layout/Layout';
+
 // Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -87,7 +90,9 @@ function AppContent() {
             path="/profile"
             element={
               <ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.CUSTOMER, UserRole.TASKER]}>
-                <ProfilePage />
+                <Layout>
+                  <ProfilePage />
+                </Layout>
               </ProtectedRoute>
             }
           />
@@ -95,7 +100,9 @@ function AppContent() {
             path="/customer/*"
             element={
               <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
-                <CustomerRoutes />
+                <Layout>
+                  <CustomerRoutes />
+                </Layout>
               </ProtectedRoute>
             }
           />
@@ -103,7 +110,9 @@ function AppContent() {
             path="/tasker/*"
             element={
               <ProtectedRoute allowedRoles={[UserRole.TASKER]}>
-                <TaskerRoutes />
+                <Layout>
+                  <TaskerRoutes />
+                </Layout>
               </ProtectedRoute>
             }
           />
@@ -111,7 +120,9 @@ function AppContent() {
             path="/admin/*"
             element={
               <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-                <AdminDashboard />
+                <Layout>
+                  <AdminDashboard />
+                </Layout>
               </ProtectedRoute>
             }
           />
