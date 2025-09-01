@@ -5,6 +5,15 @@ import { registerAsync, selectAuthLoading, selectAuthError, clearError } from '.
 import { toast } from 'react-hot-toast';
 import type { UserRole } from '../../types';
 
+interface FormErrors {
+  username?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  phoneNumber?: string;
+  general?: string;
+}
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: '',
@@ -17,32 +26,99 @@ export default function RegisterPage() {
     role: 'CUSTOMER' as UserRole,
   });
 
+  const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isLoading = useAppSelector(selectAuthLoading);
   const error = useAppSelector(selectAuthError);
 
+  // Validation functions
+  const validateUsername = (username: string): string | undefined => {
+    if (!username.trim()) return 'Username is required';
+    if (username.length < 3) return 'Username must be at least 3 characters';
+    if (username.length > 50) return 'Username must be less than 50 characters';
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'Username can only contain letters, numbers, and underscores';
+    return undefined;
+  };
+
+  const validateEmail = (email: string): string | undefined => {
+    if (!email.trim()) return 'Email is required';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return undefined;
+  };
+
+  const validatePassword = (password: string): string | undefined => {
+    if (!password) return 'Password is required';
+    if (password.length < 8) return 'Password must be at least 8 characters';
+    if (!/(?=.*[a-z])/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/(?=.*[A-Z])/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/(?=.*\d)/.test(password)) return 'Password must contain at least one number';
+    return undefined;
+  };
+
+  const validateConfirmPassword = (password: string, confirmPassword: string): string | undefined => {
+    if (!confirmPassword) return 'Please confirm your password';
+    if (password !== confirmPassword) return 'Passwords do not match';
+    return undefined;
+  };
+
+  const validatePhoneNumber = (phoneNumber: string): string | undefined => {
+    if (!phoneNumber.trim()) return undefined; // Phone is optional
+    // Remove all non-digit characters for validation
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+    if (digitsOnly.length < 10) return 'Phone number must be at least 10 digits';
+    if (digitsOnly.length > 15) return 'Phone number must be less than 15 digits';
+    // Basic international format validation
+    if (!/^[+]?[\d\s\-()]{10,15}$/.test(phoneNumber)) {
+      return 'Please enter a valid phone number (e.g., +1-234-567-8900)';
+    }
+    return undefined;
+  };
+
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
+    
+    errors.username = validateUsername(formData.username);
+    errors.email = validateEmail(formData.email);
+    errors.password = validatePassword(formData.password);
+    errors.confirmPassword = validateConfirmPassword(formData.password, formData.confirmPassword);
+    errors.phoneNumber = validatePhoneNumber(formData.phoneNumber);
+
+    setFieldErrors(errors);
+
+    // Return true if no errors
+    return !Object.values(errors).some(error => error !== undefined);
+  };
+
+  const parseBackendError = (errorMessage: string): FormErrors => {
+    const errors: FormErrors = {};
+    
+    // Handle common backend error messages
+    if (errorMessage.toLowerCase().includes('username') && errorMessage.toLowerCase().includes('already exists')) {
+      errors.username = 'This username is already taken';
+    } else if (errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('already exists')) {
+      errors.email = 'This email is already registered';
+    } else if (errorMessage.toLowerCase().includes('phone') && errorMessage.toLowerCase().includes('invalid')) {
+      errors.phoneNumber = 'Invalid phone number format';
+    } else if (errorMessage.toLowerCase().includes('password')) {
+      errors.password = errorMessage;
+    } else {
+      errors.general = errorMessage;
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
+    // Clear previous errors
+    setFieldErrors({});
+    
+    // Validate form
+    if (!validateForm()) {
       return;
     }
 
@@ -60,7 +136,20 @@ export default function RegisterPage() {
       navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);
-      // Error is handled by the async thunk
+      
+      // Parse backend error and set field-specific errors
+      if (typeof error === 'string') {
+        const backendErrors = parseBackendError(error);
+        setFieldErrors(backendErrors);
+        
+        // Show toast for general errors
+        if (backendErrors.general) {
+          toast.error(backendErrors.general);
+        }
+      } else {
+        setFieldErrors({ general: 'Registration failed. Please try again.' });
+        toast.error('Registration failed. Please try again.');
+      }
     }
   };
 
@@ -71,9 +160,25 @@ export default function RegisterPage() {
       [name]: value
     }));
     
-    // Clear error when user starts typing
+    // Clear field-specific error when user starts typing
+    if (fieldErrors[name as keyof FormErrors]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
+    
+    // Clear general error when user starts typing
     if (error) {
       dispatch(clearError());
+    }
+
+    // Real-time validation for certain fields
+    if (name === 'phoneNumber' && value.trim()) {
+      const phoneError = validatePhoneNumber(value);
+      if (phoneError) {
+        setFieldErrors(prev => ({ ...prev, phoneNumber: phoneError }));
+      }
     }
   };
 
@@ -135,8 +240,16 @@ export default function RegisterPage() {
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className={`mt-1 appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none sm:text-sm ${
+                  fieldErrors.username 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
+                placeholder="Enter your username"
               />
+              {fieldErrors.username && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.username}</p>
+              )}
             </div>
 
             <div>
@@ -150,8 +263,16 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className={`mt-1 appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none sm:text-sm ${
+                  fieldErrors.email 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
+                placeholder="Enter your email"
               />
+              {fieldErrors.email && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div>
@@ -164,8 +285,16 @@ export default function RegisterPage() {
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className={`mt-1 appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none sm:text-sm ${
+                  fieldErrors.phoneNumber 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
+                placeholder="+1-234-567-8900"
               />
+              {fieldErrors.phoneNumber && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.phoneNumber}</p>
+              )}
             </div>
 
             <div>
@@ -196,8 +325,19 @@ export default function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className={`mt-1 appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none sm:text-sm ${
+                  fieldErrors.password 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
+                placeholder="Enter your password"
               />
+              {fieldErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Must be at least 8 characters with uppercase, lowercase, and number
+              </p>
             </div>
 
             <div>
@@ -211,13 +351,23 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className={`mt-1 appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none sm:text-sm ${
+                  fieldErrors.confirmPassword 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
+                placeholder="Confirm your password"
               />
+              {fieldErrors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.confirmPassword}</p>
+              )}
             </div>
 
-            {error && (
+            {(error || fieldErrors.general) && (
               <div className="rounded-md bg-red-50 p-4">
-                <div className="text-sm text-red-700">{error}</div>
+                <div className="text-sm text-red-700">
+                  {fieldErrors.general || error}
+                </div>
               </div>
             )}
 

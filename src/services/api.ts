@@ -112,13 +112,58 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
         }
       }
 
-      // Handle other errors
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else if (error.message) {
-        toast.error(error.message);
-      } else {
-        toast.error('An unexpected error occurred');
+      // Handle specific error status codes
+      const status = error.response?.status;
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
+      
+      switch (status) {
+        case 400:
+          // Bad Request - usually validation errors
+          toast.error(errorMessage || 'Invalid request data');
+          break;
+        case 401:
+          // Unauthorized - handled above for token refresh
+          if (!originalRequest._retry) {
+            toast.error('Please log in to continue');
+          }
+          break;
+        case 403:
+          // Forbidden
+          toast.error('You do not have permission to perform this action');
+          break;
+        case 404:
+          // Not Found
+          if (error.config?.url?.includes('/auth/')) {
+            toast.error('Invalid username or password');
+          } else {
+            toast.error('The requested resource was not found');
+          }
+          break;
+        case 409:
+          // Conflict - usually duplicate data
+          toast.error(errorMessage || 'This data already exists');
+          break;
+        case 422:
+          // Unprocessable Entity - validation errors
+          toast.error(errorMessage || 'Validation error');
+          break;
+        case 500:
+          // Internal Server Error
+          toast.error('Server error. Please try again later');
+          break;
+        case 502:
+        case 503:
+        case 504:
+          // Bad Gateway, Service Unavailable, Gateway Timeout
+          toast.error('Service temporarily unavailable. Please try again later');
+          break;
+        default:
+          // Other errors
+          if (errorMessage) {
+            toast.error(errorMessage);
+          } else {
+            toast.error('An unexpected error occurred');
+          }
       }
 
       return Promise.reject(error);
@@ -141,14 +186,31 @@ export { TokenManager };
 // Utility function to handle API errors
 export const handleApiError = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
-    if (error.response?.data?.message) {
-      return error.response.data.message;
-    }
-    if (error.response?.data?.error) {
-      return error.response.data.error;
-    }
-    if (error.message) {
-      return error.message;
+    const status = error.response?.status;
+    const message = error.response?.data?.message || error.response?.data?.error;
+    
+    // Return specific messages based on status code
+    switch (status) {
+      case 400:
+        return message || 'Invalid request data';
+      case 401:
+        return 'Authentication required';
+      case 403:
+        return 'Access denied';
+      case 404:
+        return message || 'Resource not found';
+      case 409:
+        return message || 'Data conflict - resource already exists';
+      case 422:
+        return message || 'Validation failed';
+      case 500:
+        return 'Internal server error';
+      case 502:
+      case 503:
+      case 504:
+        return 'Service temporarily unavailable';
+      default:
+        return message || error.message || 'Network error occurred';
     }
   }
   if (error instanceof Error) {
