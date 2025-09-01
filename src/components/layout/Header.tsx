@@ -38,21 +38,22 @@ export default function Header() {
     if (!currentUser) return [];
 
     const baseItems = [
-      { name: 'Dashboard', href: getDashboardLink() },
       { name: 'Profile', href: '/profile' },
     ];
 
     switch (currentUser.role) {
       case UserRole.CUSTOMER:
         return [
+          { name: 'Dashboard', href: getDashboardLink() },
           ...baseItems,
           { name: 'My Tasks', href: '/customer/tasks' },
           { name: 'Create Task', href: '/customer/create-task' },
         ];
       case UserRole.TASKER:
         return [
-          ...baseItems,
           { name: 'Browse Tasks', href: '/tasker/browse' },
+          { name: 'Dashboard', href: '/tasker/dashboard' },
+          ...baseItems,
           { name: 'My Bids', href: '/tasker/bids' },
           { name: 'My Assignments', href: '/tasker/assignments' },
         ];

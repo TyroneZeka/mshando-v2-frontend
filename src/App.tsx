@@ -36,7 +36,7 @@ function AppContent() {
       <div className="min-h-screen bg-gray-50">
         <Routes>
           {/* Public routes */}
-          <Route 
+                    <Route 
             path="/" 
             element={
               isAuthenticated ? (
