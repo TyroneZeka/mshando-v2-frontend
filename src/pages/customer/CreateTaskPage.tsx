@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { createTaskAsync, getCategoriesAsync, selectCategories, selectTasksCreating, selectTasksError } from '../../store/slices/taskSlice';
 import { toast } from 'react-hot-toast';
+import DashboardLayout from '../../components/layout/DashboardLayout';
+import { UserRole } from '../../types';
 import type { CreateTaskRequest, TaskPriority } from '../../types';
 
 export default function CreateTaskPage() {
@@ -109,7 +111,16 @@ export default function CreateTaskPage() {
     }
 
     try {
-      const task = await dispatch(createTaskAsync(formData)).unwrap();
+      // Prepare the task data with properly formatted dueDate
+      const taskData = { ...formData };
+      
+      // If dueDate is provided, convert from date string to LocalDateTime format
+      if (taskData.dueDate) {
+        // Convert "YYYY-MM-DD" to "YYYY-MM-DDTHH:mm:ss" (default to 09:00:00)
+        taskData.dueDate = taskData.dueDate + 'T09:00:00';
+      }
+
+      const task = await dispatch(createTaskAsync(taskData)).unwrap();
       toast.success('Task created successfully!');
       navigate(`/customer/tasks/${task.id}`);
     } catch {
@@ -122,17 +133,12 @@ export default function CreateTaskPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Create New Task</h1>
-            <p className="mt-2 text-gray-600">Provide details about the task you need completed.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout 
+      userRole={UserRole.CUSTOMER}
+      title="Create New Task"
+      subtitle="Provide details about the task you need completed."
+    >
+      <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow rounded-lg">
           <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
             {/* Title */}
@@ -364,6 +370,6 @@ export default function CreateTaskPage() {
           </form>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

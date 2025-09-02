@@ -1,152 +1,241 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { getMyAssignmentsAsync, searchTasksAsync, selectMyAssignments } from '../../store/slices/taskSlice';
-import { TaskStatus } from '../../types';
+import { searchTasksAsync, selectTasksList, selectTasksLoading } from '../../store/slices/taskSlice';
+import type { Task, TaskStatus } from '../../types';
+import { TaskStatus as TaskStatusEnum } from '../../types';
+import DashboardLayout from '../../components/layout/DashboardLayout';
+import { UserRole } from '../../types';
 
 export default function TaskerDashboard() {
   const dispatch = useAppDispatch();
-  const myAssignments = useAppSelector(selectMyAssignments);
+  const tasks = useAppSelector(selectTasksList);
+  const isLoading = useAppSelector(selectTasksLoading);
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'ALL'>('ALL');
 
   useEffect(() => {
-    dispatch(getMyAssignmentsAsync());
-    dispatch(searchTasksAsync({ status: TaskStatus.PUBLISHED, size: 5 }));
+    dispatch(searchTasksAsync({}));
   }, [dispatch]);
 
-  const taskerStats = {
-    activeBids: 0, // TODO: Implement bids slice
-    completedTasks: myAssignments?.content?.filter(task => task.status === 'COMPLETED').length || 0,
-    inProgress: myAssignments?.content?.filter(task => task.status === 'IN_PROGRESS').length || 0,
-    totalEarnings: myAssignments?.content?.reduce((sum, task) => {
-      return task.status === 'COMPLETED' ? sum + task.budget : sum;
-    }, 0) || 0,
+  const availableTasks = tasks.filter((task: Task) => task.status === TaskStatusEnum.PUBLISHED);
+  const filteredTasks = statusFilter === 'ALL' ? tasks : tasks.filter((task: Task) => task.status === statusFilter);
+
+  const getStatusColor = (status: TaskStatus) => {
+    switch (status) {
+      case TaskStatusEnum.PUBLISHED:
+        return 'bg-green-100 text-green-800';
+      case TaskStatusEnum.IN_PROGRESS:
+        return 'bg-blue-100 text-blue-800';
+      case TaskStatusEnum.COMPLETED:
+        return 'bg-gray-100 text-gray-800';
+      case TaskStatusEnum.CANCELLED:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout 
+        userRole={UserRole.TASKER}
+        title="Dashboard"
+        subtitle="Welcome to your tasker dashboard"
+      >
+        <div className="flex justify-center items-center min-h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Tasker Dashboard</h1>
-            <p className="mt-2 text-gray-600">Find tasks, manage bids, and track your earnings.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+    <DashboardLayout 
+      userRole={UserRole.TASKER}
+      title="Dashboard"
+      subtitle="Welcome to your tasker dashboard"
+    >
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">{availableTasks.length}</span>
                 </div>
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Active Bids</dt>
-                  <dd className="text-lg font-medium text-gray-900">{taskerStats.activeBids}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Completed Tasks</dt>
-                  <dd className="text-lg font-medium text-gray-900">{taskerStats.completedTasks}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
-                  <dd className="text-lg font-medium text-gray-900">{taskerStats.inProgress}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
-                  <dd className="text-lg font-medium text-gray-900">${taskerStats.totalEarnings.toLocaleString()}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Available Tasks
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {availableTasks.length}
+                  </dd>
                 </dl>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Available Tasks</h3>
-            </div>
-            <div className="p-6">
-              <div className="text-center text-gray-500">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks available</h3>
-                <p className="mt-1 text-sm text-gray-500">Check back later for new task opportunities.</p>
-                <div className="mt-6">
-                  <Link 
-                    to="/tasker/browse"
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    Browse Tasks
-                  </Link>
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {tasks.filter((task: Task) => task.status === TaskStatusEnum.IN_PROGRESS).length}
+                  </span>
                 </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    In Progress
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {tasks.filter((task: Task) => task.status === TaskStatusEnum.IN_PROGRESS).length}
+                  </dd>
+                </dl>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">My Bids</h3>
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {tasks.filter((task: Task) => task.status === TaskStatusEnum.COMPLETED).length}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Completed
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {tasks.filter((task: Task) => task.status === TaskStatusEnum.COMPLETED).length}
+                  </dd>
+                </dl>
+              </div>
             </div>
-            <div className="p-6">
-              <div className="text-center text-gray-500">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No bids submitted</h3>
-                <p className="mt-1 text-sm text-gray-500">Start bidding on tasks to grow your business.</p>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">$</span>
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Total Earnings
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {formatCurrency(
+                      tasks
+                        .filter((task: Task) => task.status === TaskStatusEnum.COMPLETED)
+                        .reduce((total: number, task: Task) => total + task.budget, 0)
+                    )}
+                  </dd>
+                </dl>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Task List */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Tasks
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Browse and manage available tasks
+            </p>
+          </div>
+          <div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'ALL')}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+            >
+              <option value="ALL">All Tasks</option>
+              <option value={TaskStatusEnum.PUBLISHED}>Available</option>
+              <option value={TaskStatusEnum.IN_PROGRESS}>In Progress</option>
+              <option value={TaskStatusEnum.COMPLETED}>Completed</option>
+              <option value={TaskStatusEnum.CANCELLED}>Cancelled</option>
+            </select>
+          </div>
+        </div>
+        {filteredTasks.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks found</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {statusFilter === 'ALL' 
+                ? 'No tasks are available at the moment.'
+                : `No tasks with status "${statusFilter}" found.`
+              }
+            </p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {filteredTasks.map((task: Task) => (
+              <li key={task.id} className="px-4 py-4 hover:bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+                        {task.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <div className="ml-4 flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {task.title}
+                      </p>
+                      <p className="text-sm text-gray-500 truncate">
+                        {task.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatCurrency(task.budget)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {task.priority} Priority
+                      </p>
+                    </div>
+                    {task.status === TaskStatusEnum.PUBLISHED && (
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded">
+                        Apply
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }

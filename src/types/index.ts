@@ -12,47 +12,6 @@ export interface User {
   profilePictureUrl?: string;
   createdAt: string;
   updatedAt: string;
-  // Profile fields
-  address?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  hourlyRate?: number;
-  skills?: string; // JSON array of skills
-  availability?: string; // JSON object for availability schedule
-  averageRating?: number;
-  totalReviews?: number;
-  totalTasksCompleted?: number;
-  verificationDocuments?: string; // JSON array of document URLs
-  isBackgroundChecked?: boolean;
-  languages?: string; // JSON array of languages
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-}
-
-// Profile update request type
-export interface ProfileUpdateRequest {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  bio?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  hourlyRate?: number;
-  skills?: string;
-  availability?: string;
-  languages?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
 }
 
 export const UserRole = {

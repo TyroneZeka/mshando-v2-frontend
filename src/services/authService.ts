@@ -5,8 +5,7 @@ import type {
   RegisterRequest, 
   AuthResponse, 
   TokenValidationResponse,
-  ApiResponse,
-  ProfileUpdateRequest
+  ApiResponse 
 } from '../types';
 
 export class AuthService {
@@ -60,7 +59,7 @@ export class AuthService {
     return response.data;
   }
 
-  static async updateProfile(userData: ProfileUpdateRequest): Promise<User> {
+  static async updateProfile(userData: Partial<User>): Promise<User> {
     const response = await userApi.put<User>('/users/me', userData);
     return response.data;
   }

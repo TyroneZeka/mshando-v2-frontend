@@ -7,9 +7,6 @@ import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUserAsync, selectIsAuthenticated, selectUserRole } from './store/slices/authSlice';
 import { UserRole } from './types';
 
-// Components
-import Layout from './components/layout/Layout';
-
 // Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -36,7 +33,7 @@ function AppContent() {
       <div className="min-h-screen bg-gray-50">
         <Routes>
           {/* Public routes */}
-                    <Route 
+          <Route 
             path="/" 
             element={
               isAuthenticated ? (
@@ -90,9 +87,7 @@ function AppContent() {
             path="/profile"
             element={
               <ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.CUSTOMER, UserRole.TASKER]}>
-                <Layout>
-                  <ProfilePage />
-                </Layout>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
@@ -100,9 +95,7 @@ function AppContent() {
             path="/customer/*"
             element={
               <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
-                <Layout>
-                  <CustomerRoutes />
-                </Layout>
+                <CustomerRoutes />
               </ProtectedRoute>
             }
           />
@@ -110,9 +103,7 @@ function AppContent() {
             path="/tasker/*"
             element={
               <ProtectedRoute allowedRoles={[UserRole.TASKER]}>
-                <Layout>
-                  <TaskerRoutes />
-                </Layout>
+                <TaskerRoutes />
               </ProtectedRoute>
             }
           />
@@ -120,9 +111,7 @@ function AppContent() {
             path="/admin/*"
             element={
               <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-                <Layout>
-                  <AdminDashboard />
-                </Layout>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
