@@ -5,6 +5,9 @@ import TaskDetailsPage from './TaskDetailsPage';
 import CreateBidPage from './CreateBidPage';
 import MyBidsPage from './MyBidsPage';
 import MyAssignmentsPage from './MyAssignmentsPage';
+// Sprint 3: Payment and Notification pages
+import TaskerEarnings from '../payment/TaskerEarnings';
+import NotificationCenter from '../notification/NotificationCenter';
 
 export default function TaskerRoutes() {
   return (
@@ -16,6 +19,13 @@ export default function TaskerRoutes() {
       <Route path="/tasks/:taskId/bid" element={<CreateBidPage />} />
       <Route path="/bids" element={<MyBidsPage />} />
       <Route path="/assignments" element={<MyAssignmentsPage />} />
+      
+      {/* Sprint 3: Payment routes */}
+      <Route path="/earnings" element={<TaskerEarnings />} />
+      
+      {/* Sprint 3: Notification routes */}
+      <Route path="/notifications" element={<NotificationCenter />} />
+      
       <Route path="*" element={<Navigate to="/tasker" replace />} />
     </Routes>
   );
