@@ -44,6 +44,9 @@ export default function LoginPage() {
           navigate('/');
       }
     } catch (error) {
+      if (error) {
+      dispatch(clearError());
+    }
       // Error is handled by the async thunk and displayed via toast in interceptor
     }
   };
