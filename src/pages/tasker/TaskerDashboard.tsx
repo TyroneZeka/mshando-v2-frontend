@@ -1,24 +1,25 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { getAvailableTasksAsync, selectAvailableTasks } from '../../store/slices/taskSlice';
+import { searchTasksAsync, selectSearchResults } from '../../store/slices/taskSlice';
 import { getMyBidsAsync, selectMyBids } from '../../store/slices/bidSlice';
 import { getTaskerTotalEarningsAsync, selectTaskerTotalEarnings } from '../../store/slices/paymentSlice';
 import { getUnreadNotificationCountAsync, selectUnreadNotificationCount } from '../../store/slices/notificationSlice';
 import { selectUser } from '../../store/slices/authSlice';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { UserRole } from '../../types';
+import type { Task } from '../../types';
 
 export default function TaskerDashboard() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
-  const availableTasks = useAppSelector(selectAvailableTasks);
+  const availableTasks = useAppSelector(selectSearchResults);
   const myBids = useAppSelector(selectMyBids);
   const totalEarnings = useAppSelector(selectTaskerTotalEarnings);
   const unreadNotifications = useAppSelector(selectUnreadNotificationCount);
 
   useEffect(() => {
-    dispatch(getAvailableTasksAsync({ page: 0, size: 5 })); // Get latest 5 tasks for preview
+    dispatch(searchTasksAsync({ page: 0, size: 5 })); // Get latest 5 tasks for preview
     dispatch(getMyBidsAsync({ page: 0, size: 5 })); // Get latest 5 bids for preview
     
     if (user?.id) {
@@ -214,7 +215,7 @@ export default function TaskerDashboard() {
           <div className="p-6">
             {availableTasks?.content && availableTasks.content.length > 0 ? (
               <div className="space-y-4">
-                {availableTasks.content.slice(0, 5).map((task) => (
+                {availableTasks.content.slice(0, 5).map((task: Task) => (
                   <div key={task.id} className="border-l-4 border-blue-400 pl-4 py-2">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
