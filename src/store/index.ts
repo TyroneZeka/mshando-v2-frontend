@@ -4,6 +4,8 @@ import taskReducer from './slices/taskSlice';
 import bidReducer from './slices/bidSlice';
 import paymentReducer from './slices/paymentSlice';
 import notificationReducer from './slices/notificationSlice';
+import adminReducer from './slices/adminSlice';
+import categoryReducer from './slices/categorySlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +14,8 @@ export const store = configureStore({
     bids: bidReducer,
     payments: paymentReducer,
     notifications: notificationReducer,
+    admin: adminReducer,
+    categories: categoryReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

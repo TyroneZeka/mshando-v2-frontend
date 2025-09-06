@@ -118,6 +118,12 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string;
+  iconName?: string;
+}
+
 // Task Image types
 export interface TaskImage {
   id: number;
