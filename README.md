@@ -20,7 +20,10 @@ npm run build
 | Document | Description |
 |----------|-------------|
 | [📋 Frontend Documentation](./FRONTEND_DOCUMENTATION.md) | Complete technical documentation and architecture guide |
-| [🎯 Sprint 2 Summary](./SPRINT_2_SUMMARY.md) | Latest sprint implementation details and features |
+| [🎯 Sprint 4 Summary](./SPRINT_4_SUMMARY.md) | Latest sprint implementation - Admin Features & Analytics |
+| [🎯 Sprint 3 Summary](./SPRINT_3_SUMMARY.md) | Payment processing and notification system |
+| [🎯 Sprint 2 Summary](./SPRINT_2_SUMMARY.md) | Core platform functionality and user management |
+| [🔧 Admin API Documentation](./ADMIN_API_DOCUMENTATION.md) | Complete admin endpoints and API reference |
 | [🔧 Development Guide](./FRONTEND_DOCUMENTATION.md#development-guide) | Setup, workflow, and contribution guidelines |
 
 ## 🏗️ Architecture Overview
@@ -47,7 +50,7 @@ Frontend (React + TypeScript)
 
 #### 🛍️ **Customer Journey**
 ```
-Register → Create Tasks → Add Photos → Receive Bids → Accept Bids → Monitor Progress
+Register → Create Tasks → Add Photos → Receive Bids → Accept Bids → Monitor Progress → Make Payments
 ```
 
 #### 🔨 **Tasker Journey** 
@@ -55,11 +58,34 @@ Register → Create Tasks → Add Photos → Receive Bids → Accept Bids → Mo
 Register → Browse Tasks → Submit Bids → Win Assignments → Complete Tasks → Get Paid
 ```
 
-### 💰 **Bidding System**
+#### �‍💼 **Admin Control Panel** *(New in Sprint 4)*
+```
+Admin Login → User Management → Category Administration → System Analytics → Platform Monitoring
+```
+
+### �💰 **Bidding System**
 - **Create Bids**: Submit competitive proposals with validation
 - **Manage Bids**: Edit, withdraw, and track bid status
 - **Review Bids**: Customer interface for accepting/rejecting bids
 - **Assignment Tracking**: Monitor assigned tasks and progress
+
+### 💳 **Payment Processing** *(Sprint 3)*
+- **Secure Payments**: Credit card processing with Stripe integration
+- **Payment History**: Complete transaction tracking for customers
+- **Earnings Dashboard**: Tasker payment and earnings management
+- **Service Fees**: Automated platform fee collection
+
+### 🔔 **Notification System** *(Sprint 3)*
+- **Real-time Notifications**: Instant updates for bids, payments, and tasks
+- **Notification Center**: Centralized message management
+- **Email Integration**: Important updates via email
+- **Push Notifications**: Browser-based instant alerts
+
+### 👨‍💼 **Admin Features** *(Sprint 4)*
+- **User Management**: Search, filter, activate/deactivate users
+- **Category Administration**: CRUD operations for task categories
+- **System Analytics**: Comprehensive dashboards with custom charts
+- **Platform Monitoring**: Real-time system health and performance metrics
 
 ### 📸 **Media Management**
 - Drag-and-drop image upload
@@ -94,7 +120,19 @@ Register → Browse Tasks → Submit Bids → Win Assignments → Complete Tasks
 - Assignment management
 - Customer bid review system
 
-### 🔄 **Sprint 3: Payments & Reviews** (Planned)
+### ✅ **Sprint 3: Payments & Notifications** (Complete)
+- Stripe payment integration
+- Payment processing and history
+- Real-time notification system
+- Email and push notifications
+
+### ✅ **Sprint 4: Admin Features & Analytics** (Complete)
+- Comprehensive admin dashboard
+- User and category management
+- Custom analytics with charts
+- System monitoring and health metrics
+
+### 🔄 **Sprint 5: Advanced Features** (Planned)
 - Payment integration
 - Review and rating system
 - Real-time notifications
