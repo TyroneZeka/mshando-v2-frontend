@@ -1,6 +1,6 @@
 # Admin API Endpoints Documentation
 
-**Version**: 1.4.0  
+**Version**: 1.6.0  
 **Last Updated**: September 7, 2025  
 **Base URL**: `http://localhost:8080/api`
 
@@ -549,6 +549,6 @@ All admin operations are logged with:
 
 ---
 
-**Documentation Version**: 1.4.0  
+**Documentation Version**: 1.6.0  
 **API Version**: v1  
 **Last Updated**: September 7, 2025

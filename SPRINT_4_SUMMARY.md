@@ -2,7 +2,7 @@
 
 **Sprint Duration**: Sprint 4  
 **Release Date**: September 7, 2025  
-**Version**: 1.4.0
+**Version**: 1.6.0
 
 ## 🎯 Sprint 4 Objectives
 
